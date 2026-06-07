@@ -9,14 +9,16 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { getDb } from '../lib/firebase.js'
+import { logActivity } from '../lib/activityApi.js'
 import { createItem, createList } from '../lib/store.js'
 
 /**
  * Firestore 上の共有ボードをリアルタイム購読する。
  * boardId が null のときは何もしない（ローカルモード時）。
+ * actor は操作者の表示名（誰がやったかの記録に使う）。
  * useLocalBoard と同じインターフェイスを返す。
  */
-export function useCloudBoard(boardId) {
+export function useCloudBoard(boardId, actor = '名無し') {
   const [lists, setLists] = useState([])
   const [ready, setReady] = useState(false)
   const [error, setError] = useState(null)
@@ -68,6 +70,10 @@ export function useCloudBoard(boardId) {
 
   const api = useMemo(() => {
     const listRef = (listId) => doc(getDb(), 'boards', boardId, 'lists', listId)
+    const listName = (listId) =>
+      lists.find((l) => l.id === listId)?.name || 'リスト'
+    const log = (type, fields) => logActivity(boardId, { type, by: actor, ...fields })
+
     return {
       addList(name) {
         const list = createList(name)
@@ -76,26 +82,38 @@ export function useCloudBoard(boardId) {
           order: Date.now(),
           items: {},
         })
+        log('addList', { listName: list.name })
         return list.id
       },
       renameList(listId, name) {
         if (!name.trim()) return
         updateDoc(listRef(listId), { name: name.trim() })
+        log('renameList', { listName: name.trim() })
       },
       removeList(listId) {
+        const name = listName(listId)
         deleteDoc(listRef(listId))
+        log('removeList', { listName: name })
       },
       addItem(listId, name, qty) {
         if (!name.trim()) return
         const { id, ...rest } = createItem(name, qty)
+        rest.by = actor
         updateDoc(listRef(listId), { [`items.${id}`]: rest })
+        log('add', { itemName: rest.name, listName: listName(listId) })
       },
       toggleItem(listId, itemId) {
         const it = lists
           .find((l) => l.id === listId)
           ?.items.find((i) => i.id === itemId)
+        const next = !it?.checked
         updateDoc(listRef(listId), {
-          [`items.${itemId}.checked`]: !it?.checked,
+          [`items.${itemId}.checked`]: next,
+          [`items.${itemId}.checkedBy`]: next ? actor : deleteField(),
+        })
+        log(next ? 'check' : 'uncheck', {
+          itemName: it?.name || '',
+          listName: listName(listId),
         })
       },
       editItem(listId, itemId, patch) {
@@ -104,9 +122,19 @@ export function useCloudBoard(boardId) {
           updates[`items.${itemId}.${k}`] = v
         }
         updateDoc(listRef(listId), updates)
+        if (patch.name) {
+          log('edit', { itemName: patch.name, listName: listName(listId) })
+        }
       },
       removeItem(listId, itemId) {
+        const it = lists
+          .find((l) => l.id === listId)
+          ?.items.find((i) => i.id === itemId)
         updateDoc(listRef(listId), { [`items.${itemId}`]: deleteField() })
+        log('delete', {
+          itemName: it?.name || '',
+          listName: listName(listId),
+        })
       },
       clearChecked(listId) {
         const l = lists.find((x) => x.id === listId)
@@ -117,10 +145,13 @@ export function useCloudBoard(boardId) {
           .forEach((i) => {
             updates[`items.${i.id}`] = deleteField()
           })
-        if (Object.keys(updates).length) updateDoc(listRef(listId), updates)
+        if (Object.keys(updates).length) {
+          updateDoc(listRef(listId), updates)
+          log('clear', { listName: l.name })
+        }
       },
     }
-  }, [boardId, lists])
+  }, [boardId, lists, actor])
 
   return { lists, ready, error, ...api }
 }

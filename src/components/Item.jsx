@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function Item({ item, onToggle, onEdit, onRemove }) {
+export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(item.name)
   const inputRef = useRef(null)
@@ -50,8 +50,19 @@ export default function Item({ item, onToggle, onEdit, onRemove }) {
           onClick={onToggle}
           title="クリックでチェック / ダブルクリックで編集"
         >
-          <span className="item__name">{item.name}</span>
-          {item.qty && <span className="item__qty">{item.qty}</span>}
+          <span className="item__main">
+            <span className="item__name">{item.name}</span>
+            {item.qty && <span className="item__qty">{item.qty}</span>}
+          </span>
+          {showWho && (item.by || item.checkedBy) && (
+            <span className="item__who">
+              {item.checked && item.checkedBy
+                ? `✓ ${item.checkedBy}`
+                : item.by
+                  ? `${item.by}`
+                  : ''}
+            </span>
+          )}
         </button>
       )}
 

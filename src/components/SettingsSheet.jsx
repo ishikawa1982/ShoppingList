@@ -1,9 +1,28 @@
 import Sheet from './Sheet.jsx'
 import { THEMES } from '../lib/themes.js'
 
-export default function SettingsSheet({ settings, onChange, onClose, install }) {
+export default function SettingsSheet({
+  settings,
+  onChange,
+  onClose,
+  install,
+  profile,
+  onProfileChange,
+}) {
   return (
     <Sheet title="設定" onClose={onClose}>
+      <div className="sheet__row">
+        <span className="sheet__label">あなたの名前（共有時に表示されます）</span>
+        <input
+          className="sheet__input"
+          value={profile.name}
+          onChange={(e) => onProfileChange({ ...profile, name: e.target.value })}
+          placeholder="例: パパ / ママ"
+          maxLength={20}
+          aria-label="あなたの名前"
+        />
+      </div>
+
       <div className="sheet__row">
         <span className="sheet__label">テーマカラー</span>
         <div className="swatches">

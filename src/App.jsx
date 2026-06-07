@@ -13,6 +13,7 @@ import Item from './components/Item.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
 import ListSheet from './components/ListSheet.jsx'
 import ShareSheet from './components/ShareSheet.jsx'
+import HistorySheet from './components/HistorySheet.jsx'
 
 const CartIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -27,17 +28,19 @@ export default function App() {
     themeId: 'mint',
     dark: false,
   })
+  const [profile, setProfile] = useLocalStorage('shopping.profile', { name: '' })
   const [boardId, setBoardId] = useLocalStorage('shopping.boardId', null)
   const [activeId, setActiveId] = useState(null)
-  const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | null
+  const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | 'history' | null
   const install = useInstallPrompt()
 
   const configured = isFirebaseConfigured()
   const effectiveBoardId = configured ? boardId : null
+  const actor = profile.name.trim() || '名無し'
 
   // データ層: 共有中はクラウド、そうでなければローカル（フックは常に両方呼ぶ）
   const local = useLocalBoard()
-  const cloud = useCloudBoard(effectiveBoardId)
+  const cloud = useCloudBoard(effectiveBoardId, actor)
   const board = effectiveBoardId ? cloud : local
   const lists = board.lists
 
@@ -56,6 +59,8 @@ export default function App() {
       const base = import.meta.env.BASE_URL || '/'
       const qs = params.toString()
       window.history.replaceState({}, '', base + (qs ? '?' + qs : ''))
+      // 名前未設定で参加した場合は、まず名前を決めてもらう
+      if (!profile.name.trim()) setSheet('settings')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -122,6 +127,11 @@ export default function App() {
             {effectiveBoardId && <span className="badge">共有中</span>}
           </h1>
           <div className="header__actions">
+            {effectiveBoardId && (
+              <button className="icon-btn" onClick={() => setSheet('history')} aria-label="履歴">
+                🕒
+              </button>
+            )}
             <button className="icon-btn" onClick={() => setSheet('share')} aria-label="共有">
               {effectiveBoardId ? '👨‍👩‍👧' : '🔗'}
             </button>
@@ -160,6 +170,7 @@ export default function App() {
                 <Item
                   key={it.id}
                   item={it}
+                  showWho={!!effectiveBoardId}
                   onToggle={() => handleToggle(it.id)}
                   onEdit={(patch) => handleEdit(it.id, patch)}
                   onRemove={() => handleRemove(it.id)}
@@ -188,8 +199,14 @@ export default function App() {
           settings={settings}
           onChange={setSettings}
           install={install}
+          profile={profile}
+          onProfileChange={setProfile}
           onClose={() => setSheet(null)}
         />
+      )}
+
+      {sheet === 'history' && effectiveBoardId && (
+        <HistorySheet boardId={effectiveBoardId} onClose={() => setSheet(null)} />
       )}
 
       {sheet === 'share' && (
