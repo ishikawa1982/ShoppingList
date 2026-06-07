@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocalStorage } from './hooks/useLocalStorage.js'
+import { useInstallPrompt } from './hooks/useInstallPrompt.js'
 import {
   addItem,
   addList,
@@ -35,6 +36,7 @@ export default function App() {
   })
   const [activeId, setActiveId] = useState(() => state.lists[0]?.id)
   const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | null
+  const install = useInstallPrompt()
 
   // 外観をDOMに反映
   useEffect(() => {
@@ -152,6 +154,7 @@ export default function App() {
         <SettingsSheet
           settings={settings}
           onChange={setSettings}
+          install={install}
           onClose={() => setSheet(null)}
         />
       )}

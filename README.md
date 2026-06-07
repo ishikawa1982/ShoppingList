@@ -13,6 +13,7 @@
 - 🗑️ 個別削除 / 購入済みを一括クリア
 - 🎨 テーマカラー 5 色 + ダークモード
 - 💾 ブラウザ（localStorage）に自動保存・別タブにも反映
+- 📲 PWA 対応（ホーム画面に追加・オフライン起動）
 
 ## 技術スタック
 
@@ -43,6 +44,15 @@ src/
   lib/themes.js           テーマカラー定義と外観適用
   components/             Tabs / AddBar / Item / Sheet / 各シート
 ```
+
+## PWA について
+
+`vite-plugin-pwa` でホーム画面追加・オフライン起動に対応しています。
+
+- アイコンは `public/pwa-*.png`（`scripts/make_icons.py` で生成。再生成には Python + Pillow が必要ですが、生成済み PNG はコミット済みなので通常は不要）
+- インストール導線は設定シート内の「アプリ」セクション（Android / デスクトップはワンタップ、iOS は手動追加の案内）
+- 動作確認はビルド版で：`npm run build && npm run preview`
+- スマホで実機確認するには HTTPS での公開（デプロイ）が必要です
 
 ## 今後の予定（段階的）
 

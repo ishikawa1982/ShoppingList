@@ -1,7 +1,7 @@
 import Sheet from './Sheet.jsx'
 import { THEMES } from '../lib/themes.js'
 
-export default function SettingsSheet({ settings, onChange, onClose }) {
+export default function SettingsSheet({ settings, onChange, onClose, install }) {
   return (
     <Sheet title="設定" onClose={onClose}>
       <div className="sheet__row">
@@ -30,6 +30,27 @@ export default function SettingsSheet({ settings, onChange, onClose }) {
           aria-label="ダークモード切り替え"
         />
       </div>
+
+      {install && !install.installed && (
+        <div className="sheet__row">
+          <span className="sheet__label">アプリ</span>
+          {install.canInstall ? (
+            <button className="btn btn--primary" onClick={install.promptInstall}>
+              📲 ホーム画面に追加
+            </button>
+          ) : install.isIos ? (
+            <p className="hint">
+              Safari の共有ボタン <strong>􀈂</strong> →「ホーム画面に追加」で
+              アプリとして使えます。
+            </p>
+          ) : (
+            <p className="hint">
+              ブラウザのメニューから「アプリをインストール」を選ぶと
+              ホーム画面に追加できます。
+            </p>
+          )}
+        </div>
+      )}
 
       <button className="btn btn--ghost" onClick={onClose}>
         閉じる
