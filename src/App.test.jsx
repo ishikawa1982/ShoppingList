@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import App from './App.jsx'
 
-describe('App (local mode, Firebase 未設定)', () => {
+describe('App (ローカルモード)', () => {
   beforeEach(() => {
     window.localStorage.clear()
   })
@@ -21,9 +21,10 @@ describe('App (local mode, Firebase 未設定)', () => {
     expect(screen.getByText('りんご')).toBeInTheDocument()
   })
 
-  it('Firebase 未設定では共有シートが設定を促す', () => {
+  it('共有シートを開ける（Firebase 設定済みなら共有開始ボタンを表示）', () => {
     render(<App />)
     fireEvent.click(screen.getByLabelText('共有'))
-    expect(screen.getByText(/Firebase の設定が必要/)).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /共有を始める/ })).toBeInTheDocument()
   })
 })

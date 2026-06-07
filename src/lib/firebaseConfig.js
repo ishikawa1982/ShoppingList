@@ -7,12 +7,12 @@
 // 方法A（簡単）: 下の inline に直接貼り付けてコミットする
 // 方法B（上級）: 環境変数 VITE_FIREBASE_* を設定する（こちらが優先されます）
 const inline = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  storageBucket: '',
-  messagingSenderId: '',
-  appId: '',
+  apiKey: 'AIzaSyBK385Tx4V2Wv5i_mFnoFnSvMMkFXEylq8',
+  authDomain: 'shoppinglist-2026.firebaseapp.com',
+  projectId: 'shoppinglist-2026',
+  storageBucket: 'shoppinglist-2026.firebasestorage.app',
+  messagingSenderId: '211624281603',
+  appId: '1:211624281603:web:59ae0ac46dfd774438b036',
 }
 
 const env = import.meta.env
