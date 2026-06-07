@@ -6,7 +6,7 @@ import { useCloudBoard } from './hooks/useCloudBoard.js'
 import { sortedItems } from './lib/store.js'
 import { applyAppearance } from './lib/themes.js'
 import { isFirebaseConfigured } from './lib/firebase.js'
-import { createBoard, inviteUrl } from './lib/boardApi.js'
+import { createBoard, genBoardId, inviteUrl } from './lib/boardApi.js'
 import AddBar from './components/AddBar.jsx'
 import Tabs from './components/Tabs.jsx'
 import Item from './components/Item.jsx'
@@ -29,6 +29,7 @@ export default function App() {
     dark: false,
   })
   const [profile, setProfile] = useLocalStorage('shopping.profile', { name: '' })
+  const [clientId, setClientId] = useLocalStorage('shopping.clientId', () => genBoardId())
   const [boardId, setBoardId] = useLocalStorage('shopping.boardId', null)
   const [activeId, setActiveId] = useState(null)
   const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | 'history' | null
@@ -48,6 +49,11 @@ export default function App() {
   useEffect(() => {
     applyAppearance(settings)
   }, [settings])
+
+  // 端末ID を初回に localStorage へ保存（リロード後も同じ管理者判定にするため）
+  useEffect(() => {
+    setClientId((prev) => prev)
+  }, [setClientId])
 
   // 招待リンク (?board=...) で開かれたら、そのボードに参加してURLを整える
   useEffect(() => {
@@ -82,6 +88,12 @@ export default function App() {
   const hasChecked = items.some((it) => it.checked)
   const loading = !!effectiveBoardId && !cloud.ready
 
+  // 共有の管理者かどうか（最初に共有した人 = ownerId が自分の端末ID）。
+  // ownerId が無い旧ボードは誰でも操作可とする（ロックアウト防止）。
+  const isOwner = !cloud.ownerId || cloud.ownerId === clientId
+  // 未共有なら自分が共有を始められる。共有中は管理者のみ操作可。
+  const canManageShare = !effectiveBoardId || isOwner
+
   // --- item handlers ---
   const handleAddItem = (name, qty) => board.addItem(activeList.id, name, qty)
   const handleToggle = (id) => board.toggleItem(activeList.id, id)
@@ -106,7 +118,7 @@ export default function App() {
 
   // --- share handlers ---
   const handleStartShare = async () => {
-    const id = await createBoard(local.lists)
+    const id = await createBoard(local.lists, clientId)
     setBoardId(id)
     setActiveId(null)
   }
@@ -132,7 +144,13 @@ export default function App() {
                 🕒
               </button>
             )}
-            <button className="icon-btn" onClick={() => setSheet('share')} aria-label="共有">
+            <button
+              className="icon-btn"
+              onClick={() => setSheet('share')}
+              disabled={!canManageShare}
+              title={canManageShare ? '共有' : '共有の管理は作成者のみ可能です'}
+              aria-label="共有"
+            >
               {effectiveBoardId ? '👨‍👩‍👧' : '🔗'}
             </button>
             <button className="icon-btn" onClick={() => setSheet('settings')} aria-label="設定">

@@ -132,6 +132,15 @@ input {
   transform: scale(0.92);
 }
 
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.icon-btn:disabled:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 /* ---------- Tabs ---------- */
 .tabs {
   display: flex;

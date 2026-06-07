@@ -20,12 +20,14 @@ import { createItem, createList } from '../lib/store.js'
  */
 export function useCloudBoard(boardId, actor = '名無し') {
   const [lists, setLists] = useState([])
+  const [ownerId, setOwnerId] = useState(null)
   const [ready, setReady] = useState(false)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!boardId) {
       setLists([])
+      setOwnerId(null)
       setReady(false)
       setError(null)
       return
@@ -38,6 +40,12 @@ export function useCloudBoard(boardId, actor = '名無し') {
     }
     setReady(false)
     setError(null)
+    // ボードのメタ情報（ownerId など）を購読
+    const unsubBoard = onSnapshot(
+      doc(db, 'boards', boardId),
+      (d) => setOwnerId(d.exists() ? d.data().ownerId ?? null : null),
+      (err) => console.warn('ボード情報の取得に失敗', err),
+    )
     const col = collection(db, 'boards', boardId, 'lists')
     const unsub = onSnapshot(
       col,
@@ -65,7 +73,10 @@ export function useCloudBoard(boardId, actor = '名無し') {
         setReady(true)
       },
     )
-    return unsub
+    return () => {
+      unsubBoard()
+      unsub()
+    }
   }, [boardId])
 
   const api = useMemo(() => {
@@ -153,5 +164,5 @@ export function useCloudBoard(boardId, actor = '名無し') {
     }
   }, [boardId, lists, actor])
 
-  return { lists, ready, error, ...api }
+  return { lists, ownerId, ready, error, ...api }
 }

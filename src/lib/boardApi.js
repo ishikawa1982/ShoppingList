@@ -22,11 +22,15 @@ function itemsToMap(items = []) {
 }
 
 // 現在のリスト群からクラウドにボードを新規作成し、boardId を返す。
-export async function createBoard(lists) {
+// ownerId（作成者の端末ID）を記録し、共有の管理権限の判定に使う。
+export async function createBoard(lists, ownerId) {
   const db = getDb()
   if (!db) throw new Error('Firebase が未設定です')
   const boardId = genBoardId()
-  await setDoc(doc(db, 'boards', boardId), { createdAt: Date.now() })
+  await setDoc(doc(db, 'boards', boardId), {
+    createdAt: Date.now(),
+    ownerId: ownerId || null,
+  })
   const listsCol = collection(db, 'boards', boardId, 'lists')
   let order = Date.now()
   for (const l of lists) {
