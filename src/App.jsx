@@ -3,6 +3,8 @@ import { useLocalStorage } from './hooks/useLocalStorage.js'
 import { useInstallPrompt } from './hooks/useInstallPrompt.js'
 import { useLocalBoard } from './hooks/useLocalBoard.js'
 import { useCloudBoard } from './hooks/useCloudBoard.js'
+import { useChangeNotifications } from './hooks/useChangeNotifications.js'
+import { requestPermission } from './lib/notify.js'
 import { sortedItems } from './lib/store.js'
 import { applyAppearance } from './lib/themes.js'
 import { isFirebaseConfigured } from './lib/firebase.js'
@@ -41,9 +43,16 @@ export default function App() {
 
   // データ層: 共有中はクラウド、そうでなければローカル（フックは常に両方呼ぶ）
   const local = useLocalBoard()
-  const cloud = useCloudBoard(effectiveBoardId, actor)
+  const cloud = useCloudBoard(effectiveBoardId, actor, clientId)
   const board = effectiveBoardId ? cloud : local
   const lists = board.lists
+
+  // 共有中、他の人の追加/購入済みをブラウザ通知（アプリ起動中のみ）
+  useChangeNotifications(lists, {
+    enabled: !!effectiveBoardId && !!settings.notify,
+    clientId,
+    boardId: effectiveBoardId,
+  })
 
   // 外観をDOMに反映
   useEffect(() => {
@@ -122,6 +131,18 @@ export default function App() {
     setBoardId(id)
     setActiveId(null)
   }
+  const handleToggleNotify = async () => {
+    if (settings.notify) {
+      setSettings({ ...settings, notify: false })
+      return
+    }
+    const ok = await requestPermission()
+    setSettings({ ...settings, notify: ok })
+    if (!ok) {
+      alert('通知が許可されませんでした。ブラウザ／OSの設定で通知を許可してください。')
+    }
+  }
+
   const handleStopShare = () => {
     local.replaceAll(cloud.lists.map(({ order, ...l }) => l))
     setBoardId(null)
@@ -219,6 +240,7 @@ export default function App() {
           install={install}
           profile={profile}
           onProfileChange={setProfile}
+          onToggleNotify={handleToggleNotify}
           onClose={() => setSheet(null)}
         />
       )}

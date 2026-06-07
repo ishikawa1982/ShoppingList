@@ -8,6 +8,7 @@ export default function SettingsSheet({
   install,
   profile,
   onProfileChange,
+  onToggleNotify,
 }) {
   return (
     <Sheet title="設定" onClose={onClose}>
@@ -47,6 +48,18 @@ export default function SettingsSheet({
           onClick={() => onChange({ ...settings, dark: !settings.dark })}
           aria-pressed={settings.dark}
           aria-label="ダークモード切り替え"
+        />
+      </div>
+
+      <div className="sheet__row toggle-row">
+        <span className="sheet__label" style={{ marginBottom: 0 }}>
+          通知（共有相手の追加・購入済みを知らせる）
+        </span>
+        <button
+          className={'switch' + (settings.notify ? ' switch--on' : '')}
+          onClick={onToggleNotify}
+          aria-pressed={!!settings.notify}
+          aria-label="通知の切り替え"
         />
       </div>
 

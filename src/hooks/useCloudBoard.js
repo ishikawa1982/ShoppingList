@@ -18,7 +18,7 @@ import { createItem, createList } from '../lib/store.js'
  * actor は操作者の表示名（誰がやったかの記録に使う）。
  * useLocalBoard と同じインターフェイスを返す。
  */
-export function useCloudBoard(boardId, actor = '名無し') {
+export function useCloudBoard(boardId, actor = '名無し', actorId = null) {
   const [lists, setLists] = useState([])
   const [ownerId, setOwnerId] = useState(null)
   const [ready, setReady] = useState(false)
@@ -110,6 +110,7 @@ export function useCloudBoard(boardId, actor = '名無し') {
         if (!name.trim()) return
         const { id, ...rest } = createItem(name, qty)
         rest.by = actor
+        rest.byId = actorId
         updateDoc(listRef(listId), { [`items.${id}`]: rest })
         log('add', { itemName: rest.name, listName: listName(listId) })
       },
@@ -121,6 +122,7 @@ export function useCloudBoard(boardId, actor = '名無し') {
         updateDoc(listRef(listId), {
           [`items.${itemId}.checked`]: next,
           [`items.${itemId}.checkedBy`]: next ? actor : deleteField(),
+          [`items.${itemId}.checkedById`]: next ? actorId : deleteField(),
         })
         log(next ? 'check' : 'uncheck', {
           itemName: it?.name || '',
@@ -162,7 +164,7 @@ export function useCloudBoard(boardId, actor = '名無し') {
         }
       },
     }
-  }, [boardId, lists, actor])
+  }, [boardId, lists, actor, actorId])
 
   return { lists, ownerId, ready, error, ...api }
 }
