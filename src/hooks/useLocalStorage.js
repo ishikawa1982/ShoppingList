@@ -6,13 +6,16 @@ import { useCallback, useEffect, useState } from 'react'
  */
 export function useLocalStorage(key, initialValue) {
   const readValue = useCallback(() => {
-    if (typeof window === 'undefined') return initialValue
+    // useState と同様に、関数で渡された初期値は遅延初期化として実行する
+    const resolveInitial = () =>
+      initialValue instanceof Function ? initialValue() : initialValue
+    if (typeof window === 'undefined') return resolveInitial()
     try {
       const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : initialValue
+      return item ? JSON.parse(item) : resolveInitial()
     } catch (err) {
       console.warn(`useLocalStorage: "${key}" の読み込みに失敗しました`, err)
-      return initialValue
+      return resolveInitial()
     }
   }, [key, initialValue])
 
