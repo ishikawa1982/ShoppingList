@@ -95,6 +95,22 @@ input {
   height: 22px;
 }
 
+.header__actions {
+  display: flex;
+  gap: 6px;
+}
+
+.badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
 .icon-btn {
   background: rgba(255, 255, 255, 0.18);
   border: none;

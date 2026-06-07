@@ -1,24 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocalStorage } from './hooks/useLocalStorage.js'
 import { useInstallPrompt } from './hooks/useInstallPrompt.js'
-import {
-  addItem,
-  addList,
-  clearChecked,
-  defaultState,
-  editItem,
-  removeItem,
-  removeList,
-  renameList,
-  sortedItems,
-  toggleItem,
-} from './lib/store.js'
+import { useLocalBoard } from './hooks/useLocalBoard.js'
+import { useCloudBoard } from './hooks/useCloudBoard.js'
+import { sortedItems } from './lib/store.js'
 import { applyAppearance } from './lib/themes.js'
+import { isFirebaseConfigured } from './lib/firebase.js'
+import { createBoard, inviteUrl } from './lib/boardApi.js'
 import AddBar from './components/AddBar.jsx'
 import Tabs from './components/Tabs.jsx'
 import Item from './components/Item.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
 import ListSheet from './components/ListSheet.jsx'
+import ShareSheet from './components/ShareSheet.jsx'
 
 const CartIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -29,64 +23,92 @@ const CartIcon = () => (
 )
 
 export default function App() {
-  const [state, setState] = useLocalStorage('shopping.state.v1', defaultState)
   const [settings, setSettings] = useLocalStorage('shopping.settings.v1', {
     themeId: 'mint',
     dark: false,
   })
-  const [activeId, setActiveId] = useState(() => state.lists[0]?.id)
-  const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | null
+  const [boardId, setBoardId] = useLocalStorage('shopping.boardId', null)
+  const [activeId, setActiveId] = useState(null)
+  const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | null
   const install = useInstallPrompt()
+
+  const configured = isFirebaseConfigured()
+  const effectiveBoardId = configured ? boardId : null
+
+  // データ層: 共有中はクラウド、そうでなければローカル（フックは常に両方呼ぶ）
+  const local = useLocalBoard()
+  const cloud = useCloudBoard(effectiveBoardId)
+  const board = effectiveBoardId ? cloud : local
+  const lists = board.lists
 
   // 外観をDOMに反映
   useEffect(() => {
     applyAppearance(settings)
   }, [settings])
 
+  // 招待リンク (?board=...) で開かれたら、そのボードに参加してURLを整える
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const b = params.get('board')
+    if (b && isFirebaseConfigured()) {
+      setBoardId(b)
+      params.delete('board')
+      const base = import.meta.env.BASE_URL || '/'
+      const qs = params.toString()
+      window.history.replaceState({}, '', base + (qs ? '?' + qs : ''))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // アクティブなリストが消えた / 未設定なら先頭に寄せる
   useEffect(() => {
-    if (!state.lists.some((l) => l.id === activeId)) {
-      setActiveId(state.lists[0]?.id)
+    if (lists.length && !lists.some((l) => l.id === activeId)) {
+      setActiveId(lists[0].id)
     }
-  }, [state.lists, activeId])
+  }, [lists, activeId])
 
   const activeList = useMemo(
-    () => state.lists.find((l) => l.id === activeId) || state.lists[0],
-    [state.lists, activeId],
+    () => lists.find((l) => l.id === activeId) || lists[0],
+    [lists, activeId],
   )
 
   const items = activeList ? sortedItems(activeList.items) : []
   const remaining = items.filter((it) => !it.checked).length
   const hasChecked = items.some((it) => it.checked)
+  const loading = !!effectiveBoardId && !cloud.ready
 
-  // --- handlers ---
-  const handleAddItem = (name, qty) =>
-    setState((s) => addItem(s, activeList.id, name, qty))
-  const handleToggle = (id) => setState((s) => toggleItem(s, activeList.id, id))
-  const handleEdit = (id, patch) =>
-    setState((s) => editItem(s, activeList.id, id, patch))
-  const handleRemove = (id) => setState((s) => removeItem(s, activeList.id, id))
-  const handleClearChecked = () =>
-    setState((s) => clearChecked(s, activeList.id))
+  // --- item handlers ---
+  const handleAddItem = (name, qty) => board.addItem(activeList.id, name, qty)
+  const handleToggle = (id) => board.toggleItem(activeList.id, id)
+  const handleEdit = (id, patch) => board.editItem(activeList.id, id, patch)
+  const handleRemove = (id) => board.removeItem(activeList.id, id)
+  const handleClearChecked = () => board.clearChecked(activeList.id)
 
+  // --- list handlers ---
   const handleAddList = (name) => {
-    let newId
-    setState((s) => {
-      const { state: next, list } = addList(s, name)
-      newId = list.id
-      return next
-    })
+    const id = board.addList(name)
     setSheet(null)
-    if (newId) setActiveId(newId)
+    if (id) setActiveId(id)
   }
-
   const handleRenameList = (name) => {
-    setState((s) => renameList(s, activeList.id, name))
+    board.renameList(activeList.id, name)
+    setSheet(null)
+  }
+  const handleDeleteList = () => {
+    board.removeList(activeList.id)
     setSheet(null)
   }
 
-  const handleDeleteList = () => {
-    setState((s) => removeList(s, activeList.id))
+  // --- share handlers ---
+  const handleStartShare = async () => {
+    const id = await createBoard(local.lists)
+    setBoardId(id)
+    setActiveId(null)
+  }
+  const handleStopShare = () => {
+    local.replaceAll(cloud.lists.map(({ order, ...l }) => l))
+    setBoardId(null)
+    setActiveId(null)
     setSheet(null)
   }
 
@@ -97,13 +119,19 @@ export default function App() {
           <h1 className="header__title">
             <CartIcon />
             かいものリスト
+            {effectiveBoardId && <span className="badge">共有中</span>}
           </h1>
-          <button className="icon-btn" onClick={() => setSheet('settings')} aria-label="設定">
-            ⚙
-          </button>
+          <div className="header__actions">
+            <button className="icon-btn" onClick={() => setSheet('share')} aria-label="共有">
+              {effectiveBoardId ? '👨‍👩‍👧' : '🔗'}
+            </button>
+            <button className="icon-btn" onClick={() => setSheet('settings')} aria-label="設定">
+              ⚙
+            </button>
+          </div>
         </div>
         <Tabs
-          lists={state.lists}
+          lists={lists}
           activeId={activeList?.id}
           onSelect={setActiveId}
           onAdd={() => setSheet('addList')}
@@ -113,7 +141,12 @@ export default function App() {
       <main className="main">
         <AddBar onAdd={handleAddItem} />
 
-        {items.length === 0 ? (
+        {loading ? (
+          <div className="empty">
+            <span className="empty__emoji">☁️</span>
+            共有リストを読み込み中…
+          </div>
+        ) : items.length === 0 ? (
           <div className="empty">
             <span className="empty__emoji">🛒</span>
             まだ何もありません。
@@ -159,6 +192,17 @@ export default function App() {
         />
       )}
 
+      {sheet === 'share' && (
+        <ShareSheet
+          configured={configured}
+          isShared={!!effectiveBoardId}
+          url={effectiveBoardId ? inviteUrl(effectiveBoardId) : ''}
+          onStart={handleStartShare}
+          onStop={handleStopShare}
+          onClose={() => setSheet(null)}
+        />
+      )}
+
       {sheet === 'addList' && (
         <ListSheet
           mode="add"
@@ -171,7 +215,7 @@ export default function App() {
         <ListSheet
           mode="edit"
           initialName={activeList.name}
-          canDelete={state.lists.length > 1}
+          canDelete={lists.length > 1}
           onSubmit={handleRenameList}
           onDelete={handleDeleteList}
           onClose={() => setSheet(null)}
