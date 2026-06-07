@@ -233,6 +233,10 @@ export default function App() {
         )}
       </main>
 
+      <footer className="app__version">
+        v{typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev'}
+      </footer>
+
       {sheet === 'settings' && (
         <SettingsSheet
           settings={settings}

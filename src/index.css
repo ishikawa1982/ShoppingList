@@ -399,6 +399,14 @@ input {
   margin-bottom: 8px;
 }
 
+.app__version {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 8px 0 calc(10px + env(safe-area-inset-bottom));
+  opacity: 0.7;
+}
+
 /* ---------- Modal / Sheet ---------- */
 .overlay {
   position: fixed;

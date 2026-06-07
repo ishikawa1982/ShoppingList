@@ -13,6 +13,11 @@ describe('App (ローカルモード)', () => {
     expect(screen.getByPlaceholderText('買うものを追加')).toBeInTheDocument()
   })
 
+  it('バージョンを画面下部に表示する', () => {
+    render(<App />)
+    expect(screen.getByText(/^v\d+\.\d+\.\d+$/)).toBeInTheDocument()
+  })
+
   it('アイテムを追加できる', () => {
     render(<App />)
     const input = screen.getByPlaceholderText('買うものを追加')

@@ -1,6 +1,9 @@
+import { readFileSync } from 'node:fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+
+const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
 // GitHub Pages はサブパス(/ShoppingList/)で配信されるため、
 // ビルド時のみ base をリポジトリ名に合わせる。dev はルート(/)のまま。
@@ -9,6 +12,9 @@ const base = process.env.NODE_ENV === 'production' ? '/ShoppingList/' : '/'
 // https://vite.dev/config/
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+  },
   plugins: [
     react(),
     VitePWA({
