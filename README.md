@@ -25,7 +25,8 @@
 
 ```bash
 npm install      # 依存関係のインストール
-npm run dev      # 開発サーバー（http://localhost:5173）
+npm start        # 開発サーバー（http://localhost:5173）
+npm run dev      # npm start と同じ（Vite）
 npm run build    # 本番ビルド（dist/）
 npm run preview  # ビルド結果のプレビュー
 npm test         # テスト実行

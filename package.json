@@ -5,6 +5,7 @@
   "type": "module",
   "description": "家族で共有できる買物リスト（ローカルMVP）",
   "scripts": {
+    "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
