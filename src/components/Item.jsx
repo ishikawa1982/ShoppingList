@@ -43,12 +43,11 @@ export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
       ) : (
         <button
           className="item__body"
-          onDoubleClick={() => {
+          onClick={() => {
             setDraft(item.name)
             setEditing(true)
           }}
-          onClick={onToggle}
-          title="クリックでチェック / ダブルクリックで編集"
+          title="タップで編集"
         >
           <span className="item__main">
             <span className="item__name">{item.name}</span>
