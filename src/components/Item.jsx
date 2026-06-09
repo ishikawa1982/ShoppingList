@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(item.name)
+  const [imgOpen, setImgOpen] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -49,10 +50,7 @@ export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
           }}
           title="タップで編集"
         >
-          <span className="item__main">
-            <span className="item__name">{item.name}</span>
-            {item.qty && <span className="item__qty">{item.qty}</span>}
-          </span>
+          <span className="item__name">{item.name}</span>
           {showWho && (item.by || item.checkedBy) && (
             <span className="item__who">
               {item.checked && item.checkedBy
@@ -65,9 +63,26 @@ export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
         </button>
       )}
 
+      {item.imageDataUrl && (
+        <button
+          type="button"
+          className="item__thumb-btn"
+          onClick={() => setImgOpen(true)}
+          aria-label="画像を表示"
+        >
+          <img src={item.imageDataUrl} className="item__thumb" alt={item.name} />
+        </button>
+      )}
+
       <button className="item__del" onClick={onRemove} aria-label="削除">
         ✕
       </button>
+
+      {imgOpen && (
+        <div className="img-overlay" onClick={() => setImgOpen(false)} role="dialog" aria-modal="true">
+          <img src={item.imageDataUrl} className="img-overlay__img" alt={item.name} />
+        </div>
+      )}
     </li>
   )
 }

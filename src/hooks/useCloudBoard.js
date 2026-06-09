@@ -106,9 +106,9 @@ export function useCloudBoard(boardId, actor = '名無し', actorId = null) {
         deleteDoc(listRef(listId))
         log('removeList', { listName: name })
       },
-      addItem(listId, name, qty) {
+      addItem(listId, name, imageDataUrl) {
         if (!name.trim()) return
-        const { id, ...rest } = createItem(name, qty)
+        const { id, ...rest } = createItem(name, imageDataUrl)
         rest.by = actor
         rest.byId = actorId
         updateDoc(listRef(listId), { [`items.${id}`]: rest })

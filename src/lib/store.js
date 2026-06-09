@@ -5,11 +5,11 @@ export function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
 }
 
-export function createItem(name, qty = '') {
+export function createItem(name, imageDataUrl = null) {
   return {
     id: uid(),
     name: name.trim(),
-    qty: qty.trim(),
+    imageDataUrl: imageDataUrl ?? null,
     checked: false,
     createdAt: Date.now(),
   }
@@ -25,8 +25,8 @@ export const defaultState = () => ({
       id: uid(),
       name: '買い物',
       items: [
-        createItem('牛乳', '1本'),
-        createItem('たまご', '1パック'),
+        createItem('牛乳'),
+        createItem('たまご'),
         createItem('パン'),
       ],
     },
@@ -62,11 +62,11 @@ function mapList(state, listId, fn) {
   }
 }
 
-export function addItem(state, listId, name, qty) {
+export function addItem(state, listId, name, imageDataUrl) {
   if (!name.trim()) return state
   return mapList(state, listId, (l) => ({
     ...l,
-    items: [createItem(name, qty), ...l.items],
+    items: [createItem(name, imageDataUrl), ...l.items],
   }))
 }
 
