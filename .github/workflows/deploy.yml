@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - claude/shopping-list-webapp-TLpwa
+      - claude/item-editing-on-tap-6bvg2y
   workflow_dispatch:
 
 # GITHUB_TOKEN に Pages へデプロイする権限を付与
