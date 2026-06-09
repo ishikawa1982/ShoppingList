@@ -196,13 +196,61 @@ input {
   box-shadow: var(--shadow);
 }
 
+.add-bar__top {
+  display: flex;
+  gap: 8px;
+}
+
 .add-bar__name {
   flex: 1 1 auto;
 }
 
-.add-bar__qty {
-  flex: 0 0 84px;
-  width: 84px;
+.add-bar__img-btn {
+  flex: 0 0 auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  width: 46px;
+  font-size: 1.2rem;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.add-bar__img-btn:hover {
+  background: var(--accent-soft);
+}
+
+.add-bar__img-btn:active {
+  transform: scale(0.94);
+}
+
+.add-bar__preview {
+  position: relative;
+  margin-top: 8px;
+  display: inline-block;
+}
+
+.add-bar__preview-img {
+  display: block;
+  max-height: 140px;
+  max-width: 100%;
+  border-radius: 10px;
+  object-fit: cover;
+}
+
+.add-bar__preview-clear {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 0.75rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
 }
 
 .add-bar input {
@@ -319,20 +367,53 @@ input {
   white-space: nowrap;
 }
 
-.item__qty {
-  flex: 0 0 auto;
-  font-size: 0.82rem;
-  color: var(--accent);
-  font-weight: 600;
-}
-
 .item--checked .item__name {
   color: var(--text-muted);
   text-decoration: line-through;
 }
 
-.item--checked .item__qty {
-  color: var(--text-muted);
+.item__thumb-btn {
+  flex: 0 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  overflow: hidden;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.item__thumb-btn:hover {
+  opacity: 0.85;
+  transform: scale(1.04);
+}
+
+.item__thumb {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+}
+
+.img-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fade 0.15s ease;
+}
+
+.img-overlay__img {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .item__edit {

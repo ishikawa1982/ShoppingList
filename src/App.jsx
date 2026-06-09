@@ -104,7 +104,7 @@ export default function App() {
   const canManageShare = !effectiveBoardId || isOwner
 
   // --- item handlers ---
-  const handleAddItem = (name, qty) => board.addItem(activeList.id, name, qty)
+  const handleAddItem = (name, imageDataUrl) => board.addItem(activeList.id, name, imageDataUrl)
   const handleToggle = (id) => board.toggleItem(activeList.id, id)
   const handleEdit = (id, patch) => board.editItem(activeList.id, id, patch)
   const handleRemove = (id) => board.removeItem(activeList.id, id)

@@ -21,8 +21,8 @@ export function useLocalBoard() {
       renameList: (listId, name) =>
         setState((s) => store.renameList(s, listId, name)),
       removeList: (listId) => setState((s) => store.removeList(s, listId)),
-      addItem: (listId, name, qty) =>
-        setState((s) => store.addItem(s, listId, name, qty)),
+      addItem: (listId, name, imageDataUrl) =>
+        setState((s) => store.addItem(s, listId, name, imageDataUrl)),
       toggleItem: (listId, itemId) =>
         setState((s) => store.toggleItem(s, listId, itemId)),
       editItem: (listId, itemId, patch) =>

@@ -18,9 +18,9 @@ function freshState() {
 
 describe('item operations', () => {
   it('adds an item to the top of the list', () => {
-    const s = addItem(freshState(), 'l1', '牛乳', '1本')
+    const s = addItem(freshState(), 'l1', '牛乳', null)
     expect(s.lists[0].items).toHaveLength(1)
-    expect(s.lists[0].items[0]).toMatchObject({ name: '牛乳', qty: '1本', checked: false })
+    expect(s.lists[0].items[0]).toMatchObject({ name: '牛乳', imageDataUrl: null, checked: false })
   })
 
   it('ignores empty item names', () => {
