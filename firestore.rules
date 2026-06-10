@@ -1,15 +1,19 @@
 rules_version = '2';
 
-// 匿名認証（Firebase Anonymous Auth）導入後のルール。
-// Firebase SDK 経由でサインイン（匿名含む）したユーザーのみ読み書き可。
-// ボードID は推測されにくい乱数で、「リンクを知っている認証済みユーザーのみ」
-// がアクセスできる共有モデルです（家族で使う MVP 向け）。
+// 招待リンク方式の共有ルール。
+// ボードID は推測されにくい乱数（24文字）で、「リンクを知っている人のみ」
+// がアクセスできるモデルです。
+//
+// 匿名認証（Firebase Anonymous Auth）が有効な場合は認証済みユーザーのみに絞れますが、
+// 移行期は認証なしでも動くよう true のままにしています。
+// Anonymous Auth が正しく動作することを確認後、true を request.auth != null に変更し
+// Firebase コンソールから再デプロイしてください。
 service cloud.firestore {
   match /databases/{database}/documents {
     match /boards/{boardId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
       match /{document=**} {
-        allow read, write: if request.auth != null;
+        allow read, write: if true;
       }
     }
   }

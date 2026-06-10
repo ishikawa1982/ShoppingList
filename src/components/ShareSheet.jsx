@@ -34,10 +34,16 @@ export default function ShareSheet({
     }
   }
 
+  const [startError, setStartError] = useState(null)
+
   async function start() {
     setBusy(true)
+    setStartError(null)
     try {
       await onStart()
+    } catch (err) {
+      console.error('共有開始エラー', err)
+      setStartError(err?.message || '共有の開始に失敗しました')
     } finally {
       setBusy(false)
     }
@@ -64,6 +70,11 @@ export default function ShareSheet({
           共有を始めると、今のリストをクラウドに保存して招待リンクを発行します。
           リンクを知っている人とリアルタイムで同じリストを使えます。
         </p>
+        {startError && (
+          <p className="hint" style={{ color: 'var(--color-danger, #e53935)' }}>
+            ⚠️ {startError}
+          </p>
+        )}
         <button className="btn btn--primary" onClick={start} disabled={busy}>
           {busy ? '準備中…' : '🔗 共有を始める'}
         </button>
