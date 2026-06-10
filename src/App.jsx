@@ -4,6 +4,7 @@ import { useInstallPrompt } from './hooks/useInstallPrompt.js'
 import { useLocalBoard } from './hooks/useLocalBoard.js'
 import { useCloudBoard } from './hooks/useCloudBoard.js'
 import { useChangeNotifications } from './hooks/useChangeNotifications.js'
+import { useAnonymousAuth } from './hooks/useAnonymousAuth.js'
 import { requestPermission } from './lib/notify.js'
 import { sortedItems } from './lib/store.js'
 import { applyAppearance } from './lib/themes.js'
@@ -43,13 +44,15 @@ export default function App() {
     dark: false,
   })
   const [profile, setProfile] = useLocalStorage('shopping.profile', { name: '' })
-  const [clientId, setClientId] = useLocalStorage('shopping.clientId', () => genBoardId())
+  const [localClientId] = useLocalStorage('shopping.clientId', () => genBoardId())
+  const { uid: firebaseUid, loading: authLoading } = useAnonymousAuth()
   const [boardId, setBoardId] = useLocalStorage('shopping.boardId', null)
   const [activeId, setActiveId] = useState(null)
   const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | 'history' | null
   const install = useInstallPrompt()
 
   const configured = isFirebaseConfigured()
+  const clientId = configured ? (firebaseUid ?? localClientId) : localClientId
   const effectiveBoardId = configured ? boardId : null
   const actor = profile.name.trim() || '名無し'
 
@@ -70,11 +73,6 @@ export default function App() {
   useEffect(() => {
     applyAppearance(settings)
   }, [settings])
-
-  // 端末ID を初回に localStorage へ保存（リロード後も同じ管理者判定にするため）
-  useEffect(() => {
-    setClientId((prev) => prev)
-  }, [setClientId])
 
   // 招待リンク (?board=...) で開かれたら、そのボードに参加する。
   // パラメータはあえて残す（ホーム画面に追加したアイコンからの起動でも参加できるように）。
@@ -108,7 +106,7 @@ export default function App() {
 
   // 共有の管理者かどうか（最初に共有した人 = ownerId が自分の端末ID）。
   // ownerId が無い旧ボードは誰でも操作可とする（ロックアウト防止）。
-  const isOwner = !cloud.ownerId || cloud.ownerId === clientId
+  const isOwner = !cloud.ownerId || cloud.ownerId === clientId || cloud.ownerId === localClientId
   // 未共有なら自分が共有を始められる。共有中は管理者のみ操作可。
   const canManageShare = !effectiveBoardId || isOwner
 
