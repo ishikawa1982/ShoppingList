@@ -17,6 +17,18 @@ import ListSheet from './components/ListSheet.jsx'
 import ShareSheet from './components/ShareSheet.jsx'
 import HistorySheet from './components/HistorySheet.jsx'
 
+// URL の ?board= を書き換える（リロードなし）。
+// 招待リンクを開いた後もパラメータを残すことで、「ホーム画面に追加」した
+// アイコン（特に iOS は現在URLを取り込む）から起動しても共有ボードに参加できる。
+function syncBoardParam(boardId) {
+  const base = import.meta.env.BASE_URL || '/'
+  const params = new URLSearchParams(window.location.search)
+  if (boardId) params.set('board', boardId)
+  else params.delete('board')
+  const qs = params.toString()
+  window.history.replaceState({}, '', base + (qs ? '?' + qs : ''))
+}
+
 const CartIcon = () => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="9" cy="21" r="1" />
@@ -64,16 +76,13 @@ export default function App() {
     setClientId((prev) => prev)
   }, [setClientId])
 
-  // 招待リンク (?board=...) で開かれたら、そのボードに参加してURLを整える
+  // 招待リンク (?board=...) で開かれたら、そのボードに参加する。
+  // パラメータはあえて残す（ホーム画面に追加したアイコンからの起動でも参加できるように）。
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const b = params.get('board')
     if (b && isFirebaseConfigured()) {
       setBoardId(b)
-      params.delete('board')
-      const base = import.meta.env.BASE_URL || '/'
-      const qs = params.toString()
-      window.history.replaceState({}, '', base + (qs ? '?' + qs : ''))
       // 名前未設定で参加した場合は、まず名前を決めてもらう
       if (!profile.name.trim()) setSheet('settings')
     }
@@ -130,6 +139,8 @@ export default function App() {
     const id = await createBoard(local.lists, clientId)
     setBoardId(id)
     setActiveId(null)
+    // 自分のホーム画面アイコンからの起動でも共有を維持できるようURLに残す
+    syncBoardParam(id)
   }
   const handleToggleNotify = async () => {
     if (settings.notify) {
@@ -148,6 +159,8 @@ export default function App() {
     setBoardId(null)
     setActiveId(null)
     setSheet(null)
+    // URLからもboardを除去（次回起動で再参加しないように）
+    syncBoardParam(null)
   }
 
   return (
