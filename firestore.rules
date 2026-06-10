@@ -1,19 +1,15 @@
 rules_version = '2';
 
-// 招待リンク方式（ログイン不要）向けのルール。
-// ボードID は推測されにくい乱数で、「リンクを知っている人だけがアクセスできる」
-// という前提のシンプルな共有モデルです（家族で使う MVP 向け）。
-//
-// boards/{boardId} 以下のすべて（lists, activity など）をまとめて許可します。
-//
-// ⚠️ ボードID を知られると誰でも読み書きできます。より厳密にしたい場合は
-// ログイン（Firebase Authentication）を導入し、メンバー判定に切り替えてください。
+// 匿名認証（Firebase Anonymous Auth）導入後のルール。
+// Firebase SDK 経由でサインイン（匿名含む）したユーザーのみ読み書き可。
+// ボードID は推測されにくい乱数で、「リンクを知っている認証済みユーザーのみ」
+// がアクセスできる共有モデルです（家族で使う MVP 向け）。
 service cloud.firestore {
   match /databases/{database}/documents {
     match /boards/{boardId} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
       match /{document=**} {
-        allow read, write: if true;
+        allow read, write: if request.auth != null;
       }
     }
   }

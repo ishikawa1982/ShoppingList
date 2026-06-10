@@ -5,9 +5,11 @@ import {
   persistentLocalCache,
   persistentSingleTabManager,
 } from 'firebase/firestore'
+import { getAuth as _getAuth } from 'firebase/auth'
 import { firebaseConfig, isFirebaseConfigured } from './firebaseConfig.js'
 
 let db = null
+let auth = null
 
 // Firestore を遅延初期化して返す。未設定なら null。
 // オフラインでも使えるよう IndexedDB の永続キャッシュを有効化する（PWA 向け）。
@@ -28,6 +30,15 @@ export function getDb() {
     }
   }
   return db
+}
+
+export function getAuth() {
+  if (!isFirebaseConfigured()) return null
+  if (!auth) {
+    const app = getApps()[0] || initializeApp(firebaseConfig)
+    auth = _getAuth(app)
+  }
+  return auth
 }
 
 export { isFirebaseConfigured }
