@@ -161,6 +161,14 @@ export default function App() {
     syncBoardParam(null)
   }
 
+  // 招待リンクのボードIDを直接入力して参加（iOS PWA ↔ ブラウザの同期用途）
+  const handleJoin = (id) => {
+    setBoardId(id)
+    setActiveId(null)
+    syncBoardParam(id)
+    setSheet(null)
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -271,6 +279,7 @@ export default function App() {
           url={effectiveBoardId ? inviteUrl(effectiveBoardId) : ''}
           onStart={handleStartShare}
           onStop={handleStopShare}
+          onJoin={handleJoin}
           onClose={() => setSheet(null)}
         />
       )}

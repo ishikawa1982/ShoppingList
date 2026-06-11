@@ -1,16 +1,31 @@
 import { useState } from 'react'
 import Sheet from './Sheet.jsx'
 
+const isStandalone =
+  typeof window !== 'undefined' &&
+  window.matchMedia?.('(display-mode: standalone)').matches === true
+
+function parseBoardId(input) {
+  if (!input) return null
+  const m = input.trim().match(/[?&]board=([a-z0-9]+)/)
+  if (m) return m[1]
+  if (/^[a-z0-9]{10,}$/.test(input.trim())) return input.trim()
+  return null
+}
+
 export default function ShareSheet({
   configured,
   isShared,
   url,
   onStart,
   onStop,
+  onJoin,
   onClose,
 }) {
   const [copied, setCopied] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [joinUrl, setJoinUrl] = useState('')
+  const [joinError, setJoinError] = useState(false)
 
   async function copy() {
     try {
@@ -43,6 +58,16 @@ export default function ShareSheet({
     }
   }
 
+  function handleJoin() {
+    const boardId = parseBoardId(joinUrl)
+    if (boardId) {
+      setJoinError(false)
+      onJoin(boardId)
+    } else {
+      setJoinError(true)
+    }
+  }
+
   if (!configured) {
     return (
       <Sheet title="リストを共有" onClose={onClose}>
@@ -60,12 +85,39 @@ export default function ShareSheet({
   if (!isShared) {
     return (
       <Sheet title="リストを共有" onClose={onClose}>
+        {isStandalone && (
+          <p className="hint" style={{ background: 'var(--accent-soft)', borderRadius: 8, padding: '8px 12px' }}>
+            💡 ブラウザで共有中のリストがあれば、下の入力欄に招待リンクを貼り付けて参加できます。
+          </p>
+        )}
         <p className="hint">
           共有を始めると、今のリストをクラウドに保存して招待リンクを発行します。
           リンクを知っている人とリアルタイムで同じリストを使えます。
         </p>
         <button className="btn btn--primary" onClick={start} disabled={busy}>
           {busy ? '準備中…' : '🔗 共有を始める'}
+        </button>
+        <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+        <p className="hint">すでに招待リンクをお持ちですか？</p>
+        <div className="sheet__row">
+          <input
+            className="sheet__input"
+            value={joinUrl}
+            onChange={(e) => { setJoinUrl(e.target.value); setJoinError(false) }}
+            placeholder="招待リンクを貼り付け"
+          />
+        </div>
+        {joinError && (
+          <p className="hint" style={{ color: 'var(--danger)', marginTop: 4 }}>
+            リンクが正しくありません。招待リンクをそのまま貼り付けてください。
+          </p>
+        )}
+        <button
+          className="btn btn--ghost"
+          onClick={handleJoin}
+          disabled={!joinUrl.trim()}
+        >
+          参加する
         </button>
       </Sheet>
     )

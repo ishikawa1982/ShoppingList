@@ -73,7 +73,9 @@ export default function SettingsSheet({
           ) : install.isIos ? (
             <p className="hint">
               Safari の共有ボタン <strong>􀈂</strong> →「ホーム画面に追加」で
-              アプリとして使えます。
+              アプリとして使えます。<br />
+              ヒント: 先に「🔗 共有を始める」を設定してからホーム画面に追加すると、
+              ホームアプリ起動時も自動で同じリストに接続されます。
             </p>
           ) : (
             <p className="hint">
