@@ -9,7 +9,7 @@ describe('App (ローカルモード)', () => {
 
   it('クラッシュせず初期画面が表示される', () => {
     render(<App />)
-    expect(screen.getByText('かいものリスト')).toBeInTheDocument()
+    expect(screen.getByText('買物リスト')).toBeInTheDocument()
     expect(screen.getByPlaceholderText('買うものを追加')).toBeInTheDocument()
   })
 

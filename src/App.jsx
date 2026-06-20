@@ -40,7 +40,7 @@ const CartIcon = () => (
 
 export default function App() {
   const [settings, setSettings] = useLocalStorage('shopping.settings.v1', {
-    themeId: 'mint',
+    themeId: 'blue',
     dark: false,
   })
   const [profile, setProfile] = useLocalStorage('shopping.profile', { name: '' })
@@ -167,7 +167,7 @@ export default function App() {
         <div className="header__top">
           <h1 className="header__title">
             <CartIcon />
-            かいものリスト
+            買物リスト
             {effectiveBoardId && <span className="badge">共有中</span>}
           </h1>
           <div className="header__actions">
