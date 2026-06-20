@@ -118,7 +118,13 @@ export default function App() {
   const handleToggle = (id) => board.toggleItem(activeList.id, id)
   const handleEdit = (id, patch) => board.editItem(activeList.id, id, patch)
   const handleRemove = (id) => board.removeItem(activeList.id, id)
-  const handleClearChecked = () => board.clearChecked(activeList.id)
+  const handleClearChecked = () => {
+    const count = items.filter((it) => it.checked).length
+    if (count === 0) return
+    if (window.confirm(`購入済みの ${count} 件を消します。よろしいですか？`)) {
+      board.clearChecked(activeList.id)
+    }
+  }
 
   // --- list handlers ---
   const handleAddList = (name) => {
@@ -188,7 +194,7 @@ export default function App() {
         <div className="header__top">
           <h1 className="header__title">
             <CartIcon />
-            買物リスト
+            {group || '買物リスト'}
             {effectiveBoardId && <span className="badge">共有中</span>}
           </h1>
           <div className="header__actions">
