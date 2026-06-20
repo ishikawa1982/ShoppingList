@@ -21,12 +21,12 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['cart.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'かいものリスト',
-        short_name: 'かいもの',
+        name: '買物リスト',
+        short_name: '買物リスト',
         description: '家族で共有できる買物リスト',
         lang: 'ja',
-        theme_color: '#2ec4a6',
-        background_color: '#2ec4a6',
+        theme_color: '#3b9bf0',
+        background_color: '#c9e0fd',
         display: 'standalone',
         orientation: 'portrait',
         // start_url / scope は base から自動設定される

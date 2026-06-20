@@ -46,12 +46,12 @@ export function useChangeNotifications(lists, { enabled, clientId, boardId }) {
       if (!was) {
         if (it.byId && it.byId !== clientId) {
           const who = it.by ? `${it.by}さんが` : ''
-          showNotification('かいものリスト', `${who}「${it.name}」を追加しました`)
+          showNotification('買物リスト', `${who}「${it.name}」を追加しました`)
         }
       } else if (it.checked && !was.checked) {
         if (it.checkedById && it.checkedById !== clientId) {
           const who = it.checkedBy ? `${it.checkedBy}さんが` : ''
-          showNotification('かいものリスト', `${who}「${it.name}」を購入済みにしました`)
+          showNotification('買物リスト', `${who}「${it.name}」を購入済みにしました`)
         }
       }
     }

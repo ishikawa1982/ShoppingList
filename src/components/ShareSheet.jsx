@@ -25,7 +25,7 @@ export default function ShareSheet({
   async function nativeShare() {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'かいものリスト', url })
+        await navigator.share({ title: '買物リスト', url })
       } catch {
         /* キャンセル時は何もしない */
       }

@@ -27,7 +27,7 @@ describe('useChangeNotifications', () => {
     )
     rerender({ lists: list([{ id: 'i1', name: '牛乳', by: 'ママ', byId: 'other' }]) })
     expect(notify.showNotification).toHaveBeenCalledWith(
-      'かいものリスト',
+      '買物リスト',
       'ママさんが「牛乳」を追加しました',
     )
   })
@@ -56,7 +56,7 @@ describe('useChangeNotifications', () => {
       ]),
     })
     expect(notify.showNotification).toHaveBeenCalledWith(
-      'かいものリスト',
+      '買物リスト',
       'パパさんが「牛乳」を購入済みにしました',
     )
   })
