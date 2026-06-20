@@ -5,6 +5,11 @@ export const THEMES = [
   { id: 'pink', label: 'ピンク', accent: '#f06292' },
   { id: 'purple', label: 'パープル', accent: '#9575e0' },
   { id: 'orange', label: 'オレンジ', accent: '#f0993b' },
+  { id: 'red', label: 'レッド', accent: '#ef5350' },
+  { id: 'cyan', label: 'シアン', accent: '#00bcd4' },
+  { id: 'green', label: 'グリーン', accent: '#43a047' },
+  { id: 'indigo', label: 'インディゴ', accent: '#5c6bc0' },
+  { id: 'brown', label: 'ブラウン', accent: '#8d6e63' },
 ]
 
 export function themeById(id) {
