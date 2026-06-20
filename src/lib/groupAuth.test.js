@@ -60,6 +60,7 @@ describe('loginGroup', () => {
     expect(res).toEqual({ boardId: '田中家', created: true })
     expect(store.get('田中家').ownerId).toBe('me')
     expect(store.get('田中家').authHash).toMatch(/^[0-9a-f]{64}$/)
+    expect(store.get('田中家').groupName).toBe('田中家')
     expect(seedLists).toHaveBeenCalledTimes(1)
   })
 

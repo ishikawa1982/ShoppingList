@@ -194,7 +194,7 @@ export default function App() {
         <div className="header__top">
           <h1 className="header__title">
             <CartIcon />
-            {group || '買物リスト'}
+            {cloud.groupName || group || '買物リスト'}
             {effectiveBoardId && <span className="badge">共有中</span>}
           </h1>
           <div className="header__actions">
@@ -295,7 +295,7 @@ export default function App() {
         <ShareSheet
           configured={configured}
           isShared={!!effectiveBoardId}
-          group={group}
+          group={group || cloud.groupName}
           url={effectiveBoardId ? inviteUrl(effectiveBoardId) : ''}
           onStart={handleStartShare}
           onStop={handleStopShare}
