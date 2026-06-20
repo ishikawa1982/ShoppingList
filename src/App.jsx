@@ -10,12 +10,14 @@ import { sortedItems } from './lib/store.js'
 import { applyAppearance } from './lib/themes.js'
 import { isFirebaseConfigured } from './lib/firebase.js'
 import { createBoard, genBoardId, inviteUrl } from './lib/boardApi.js'
+import { loginGroup } from './lib/groupAuth.js'
 import AddBar from './components/AddBar.jsx'
 import Tabs from './components/Tabs.jsx'
 import Item from './components/Item.jsx'
 import SettingsSheet from './components/SettingsSheet.jsx'
 import ListSheet from './components/ListSheet.jsx'
 import ShareSheet from './components/ShareSheet.jsx'
+import LoginSheet from './components/LoginSheet.jsx'
 import HistorySheet from './components/HistorySheet.jsx'
 
 // URL の ?board= を書き換える（リロードなし）。
@@ -47,8 +49,9 @@ export default function App() {
   const [localClientId] = useLocalStorage('shopping.clientId', () => genBoardId())
   const { uid: firebaseUid, loading: authLoading } = useAnonymousAuth()
   const [boardId, setBoardId] = useLocalStorage('shopping.boardId', null)
+  const [group, setGroup] = useLocalStorage('shopping.group', '') // 合言葉ログイン中のグループ名（表示用）
   const [activeId, setActiveId] = useState(null)
-  const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | 'history' | null
+  const [sheet, setSheet] = useState(null) // 'settings' | 'addList' | 'editList' | 'share' | 'login' | 'history' | null
   const install = useInstallPrompt()
 
   const configured = isFirebaseConfigured()
@@ -140,6 +143,23 @@ export default function App() {
     // 自分のホーム画面アイコンからの起動でも共有を維持できるようURLに残す
     syncBoardParam(id)
   }
+
+  // 合言葉ログイン: グループ名＋合言葉で共有リストに入る（新規ならローカルのリストを引き継ぐ）。
+  // 失敗時は例外を投げ、LoginSheet 側でエラー表示する。
+  const handleGroupLogin = async ({ group: groupName, password, name }) => {
+    if (name) setProfile({ ...profile, name })
+    const { boardId: id } = await loginGroup({
+      groupId: groupName,
+      password,
+      lists: local.lists,
+      ownerId: clientId,
+    })
+    setBoardId(id)
+    setGroup(groupName.trim())
+    setActiveId(null)
+    syncBoardParam(id)
+    setSheet(null)
+  }
   const handleToggleNotify = async () => {
     if (settings.notify) {
       setSettings({ ...settings, notify: false })
@@ -155,6 +175,7 @@ export default function App() {
   const handleStopShare = () => {
     local.replaceAll(cloud.lists.map(({ order, ...l }) => l))
     setBoardId(null)
+    setGroup('')
     setActiveId(null)
     setSheet(null)
     // URLからもboardを除去（次回起動で再参加しないように）
@@ -268,9 +289,19 @@ export default function App() {
         <ShareSheet
           configured={configured}
           isShared={!!effectiveBoardId}
+          group={group}
           url={effectiveBoardId ? inviteUrl(effectiveBoardId) : ''}
           onStart={handleStartShare}
           onStop={handleStopShare}
+          onOpenLogin={() => setSheet('login')}
+          onClose={() => setSheet(null)}
+        />
+      )}
+
+      {sheet === 'login' && (
+        <LoginSheet
+          initialName={profile.name}
+          onLogin={handleGroupLogin}
           onClose={() => setSheet(null)}
         />
       )}

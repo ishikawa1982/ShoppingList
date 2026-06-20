@@ -21,6 +21,19 @@ function itemsToMap(items = []) {
   return map
 }
 
+// 渡されたリスト群をボード配下に書き込む（新規共有・グループ作成で共用）
+export async function seedLists(db, boardId, lists = []) {
+  const listsCol = collection(db, 'boards', boardId, 'lists')
+  let order = Date.now()
+  for (const l of lists) {
+    await setDoc(doc(listsCol, l.id), {
+      name: l.name,
+      order: order++,
+      items: itemsToMap(l.items),
+    })
+  }
+}
+
 // 現在のリスト群からクラウドにボードを新規作成し、boardId を返す。
 // ownerId（作成者の端末ID）を記録し、共有の管理権限の判定に使う。
 export async function createBoard(lists, ownerId) {
@@ -31,15 +44,7 @@ export async function createBoard(lists, ownerId) {
     createdAt: Date.now(),
     ownerId: ownerId || null,
   })
-  const listsCol = collection(db, 'boards', boardId, 'lists')
-  let order = Date.now()
-  for (const l of lists) {
-    await setDoc(doc(listsCol, l.id), {
-      name: l.name,
-      order: order++,
-      items: itemsToMap(l.items),
-    })
-  }
+  await seedLists(db, boardId, lists)
   return boardId
 }
 
