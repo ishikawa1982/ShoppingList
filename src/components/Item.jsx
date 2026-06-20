@@ -51,14 +51,8 @@ export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
           title="タップで編集"
         >
           <span className="item__name">{item.name}</span>
-          {showWho && (item.by || item.checkedBy) && (
-            <span className="item__who">
-              {item.checked && item.checkedBy
-                ? `✓ ${item.checkedBy}`
-                : item.by
-                  ? `${item.by}`
-                  : ''}
-            </span>
+          {showWho && item.by && (
+            <span className="item__who">{item.by}</span>
           )}
         </button>
       )}
