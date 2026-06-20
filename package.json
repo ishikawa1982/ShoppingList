@@ -1,7 +1,7 @@
 {
   "name": "shopping-list",
   "private": true,
-  "version": "0.11.1",
+  "version": "0.11.2",
   "type": "module",
   "description": "家族で共有できる買物リスト（ローカルMVP）",
   "scripts": {

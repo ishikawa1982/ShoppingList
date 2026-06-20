@@ -38,6 +38,7 @@ export async function loginGroup({ groupId: rawId, password, lists = [], ownerId
   if (!db) throw new Error('Firebase が未設定です')
 
   const groupId = normalizeGroupId(rawId)
+  const groupName = String(rawId).trim()
   const authHash = await hashPassword(groupId, password)
   const ref = doc(db, 'boards', groupId)
   const snap = await getDoc(ref)
@@ -47,6 +48,7 @@ export async function loginGroup({ groupId: rawId, password, lists = [], ownerId
       createdAt: Date.now(),
       ownerId: ownerId || null,
       authHash,
+      groupName,
     })
     await seedLists(db, groupId, lists)
     return { boardId: groupId, created: true }
@@ -58,6 +60,10 @@ export async function loginGroup({ groupId: rawId, password, lists = [], ownerId
   }
   if (data.authHash !== authHash) {
     throw new Error('合言葉が違います')
+  }
+  // 旧グループ（groupName 未保存）に合言葉ログインしたら、表示名を補完しておく
+  if (!data.groupName) {
+    await setDoc(ref, { groupName }, { merge: true })
   }
   return { boardId: groupId, created: false }
 }
