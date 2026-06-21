@@ -11,6 +11,7 @@ export function createItem(name, imageDataUrl = null) {
     name: name.trim(),
     imageDataUrl: imageDataUrl ?? null,
     checked: false,
+    order: 0,
     createdAt: Date.now(),
   }
 }
@@ -101,9 +102,23 @@ export function clearChecked(state, listId) {
 }
 
 // チェック済みを下に、未チェックを上に並べ替えた配列を返す。
+// 未チェック同士は order ASC → createdAt DESC（新しい順）で並ぶ。
 export function sortedItems(items) {
   return [...items].sort((a, b) => {
     if (a.checked !== b.checked) return a.checked ? 1 : -1
-    return b.createdAt - a.createdAt
+    const od = (a.order ?? 0) - (b.order ?? 0)
+    return od !== 0 ? od : b.createdAt - a.createdAt
+  })
+}
+
+export function reorderItems(state, listId, fromIndex, toIndex) {
+  if (fromIndex === toIndex) return state
+  return mapList(state, listId, (l) => {
+    const unchecked = sortedItems(l.items).filter((i) => !i.checked)
+    const checked = l.items.filter((i) => i.checked)
+    const [moved] = unchecked.splice(fromIndex, 1)
+    unchecked.splice(toIndex, 0, moved)
+    const reindexed = unchecked.map((it, i) => ({ ...it, order: i }))
+    return { ...l, items: [...reindexed, ...checked] }
   })
 }

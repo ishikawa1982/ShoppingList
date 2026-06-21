@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore'
 import { getDb } from '../lib/firebase.js'
 import { logActivity } from '../lib/activityApi.js'
-import { createItem, createList } from '../lib/store.js'
+import { createItem, createList, sortedItems } from '../lib/store.js'
 
 /**
  * Firestore 上の共有ボードをリアルタイム購読する。
@@ -167,6 +167,19 @@ export function useCloudBoard(boardId, actor = '名無し', actorId = null) {
           updateDoc(listRef(listId), updates)
           log('clear', { listName: l.name })
         }
+      },
+      reorderItems(listId, from, to) {
+        if (from === to) return
+        const l = lists.find((x) => x.id === listId)
+        if (!l) return
+        const unchecked = sortedItems(l.items).filter((i) => !i.checked)
+        const [moved] = unchecked.splice(from, 1)
+        unchecked.splice(to, 0, moved)
+        const updates = {}
+        unchecked.forEach((it, i) => {
+          updates[`items.${it.id}.order`] = i
+        })
+        if (Object.keys(updates).length) updateDoc(listRef(listId), updates)
       },
     }
   }, [boardId, lists, actor, actorId])

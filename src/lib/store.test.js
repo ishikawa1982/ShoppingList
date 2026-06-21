@@ -8,6 +8,7 @@ import {
   removeItem,
   removeList,
   renameList,
+  reorderItems,
   sortedItems,
   toggleItem,
 } from './store.js'
@@ -100,6 +101,56 @@ describe('sortedItems', () => {
     ]
     const sorted = sortedItems(items)
     expect(sorted.map((i) => i.name)).toEqual(['B', 'C', 'A'])
+  })
+
+  it('sorts unchecked by order asc, then createdAt desc as tiebreaker', () => {
+    const items = [
+      { id: 'a', name: 'A', checked: false, order: 2, createdAt: 100 },
+      { id: 'b', name: 'B', checked: false, order: 0, createdAt: 50 },
+      { id: 'c', name: 'C', checked: false, order: 0, createdAt: 200 },
+    ]
+    const sorted = sortedItems(items)
+    expect(sorted.map((i) => i.name)).toEqual(['C', 'B', 'A'])
+  })
+})
+
+describe('reorderItems', () => {
+  function makeState(names) {
+    const items = names.map((n, i) => ({
+      id: `i${i}`, name: n, checked: false, order: i, createdAt: i,
+    }))
+    return { lists: [{ id: 'l1', name: 'test', items }] }
+  }
+
+  it('moves an item from index 0 to index 2', () => {
+    const s = reorderItems(makeState(['A', 'B', 'C']), 'l1', 0, 2)
+    const names = sortedItems(s.lists[0].items).map((i) => i.name)
+    expect(names).toEqual(['B', 'C', 'A'])
+  })
+
+  it('moves an item from index 2 to index 0', () => {
+    const s = reorderItems(makeState(['A', 'B', 'C']), 'l1', 2, 0)
+    const names = sortedItems(s.lists[0].items).map((i) => i.name)
+    expect(names).toEqual(['C', 'A', 'B'])
+  })
+
+  it('does nothing when fromIndex === toIndex', () => {
+    const original = makeState(['A', 'B', 'C'])
+    const s = reorderItems(original, 'l1', 1, 1)
+    expect(s).toBe(original)
+  })
+
+  it('does not move checked items', () => {
+    const items = [
+      { id: 'u1', name: 'X', checked: false, order: 0, createdAt: 1 },
+      { id: 'u2', name: 'Y', checked: false, order: 1, createdAt: 2 },
+      { id: 'c1', name: 'Z', checked: true, order: 0, createdAt: 3 },
+    ]
+    const s = reorderItems({ lists: [{ id: 'l1', name: 'test', items }] }, 'l1', 0, 1)
+    const sorted = sortedItems(s.lists[0].items)
+    expect(sorted[0].name).toBe('Y')
+    expect(sorted[1].name).toBe('X')
+    expect(sorted[2].name).toBe('Z') // checked stays at bottom
   })
 })
 

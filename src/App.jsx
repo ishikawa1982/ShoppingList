@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocalStorage } from './hooks/useLocalStorage.js'
 import { useInstallPrompt } from './hooks/useInstallPrompt.js'
 import { useLocalBoard } from './hooks/useLocalBoard.js'
@@ -19,6 +19,7 @@ import ListSheet from './components/ListSheet.jsx'
 import ShareSheet from './components/ShareSheet.jsx'
 import LoginSheet from './components/LoginSheet.jsx'
 import HistorySheet from './components/HistorySheet.jsx'
+import { useLongPressDrag } from './hooks/useLongPressDrag.js'
 
 // URL の ?board= を書き換える（リロードなし）。
 // 招待リンクを開いた後もパラメータを残すことで、「ホーム画面に追加」した
@@ -103,9 +104,17 @@ export default function App() {
   )
 
   const items = activeList ? sortedItems(activeList.items) : []
-  const remaining = items.filter((it) => !it.checked).length
-  const hasChecked = items.some((it) => it.checked)
+  const uncheckedItems = items.filter((it) => !it.checked)
+  const checkedItems = items.filter((it) => it.checked)
+  const remaining = uncheckedItems.length
+  const hasChecked = checkedItems.length > 0
   const loading = !!effectiveBoardId && !cloud.ready
+
+  const listRef = useRef(null)
+  const { getItemProps } = useLongPressDrag(
+    listRef,
+    (from, to) => board.reorderItems(activeList?.id, from, to),
+  )
 
   // 共有の管理者かどうか（最初に共有した人 = ownerId が自分の端末ID）。
   // ownerId が無い旧ボードは誰でも操作可とする（ロックアウト防止）。
@@ -242,8 +251,19 @@ export default function App() {
           </div>
         ) : (
           <>
-            <ul className="items">
-              {items.map((it) => (
+            <ul className="items" ref={listRef}>
+              {uncheckedItems.map((it, i) => (
+                <Item
+                  key={it.id}
+                  item={it}
+                  showWho={!!effectiveBoardId}
+                  onToggle={() => handleToggle(it.id)}
+                  onEdit={(patch) => handleEdit(it.id, patch)}
+                  onRemove={() => handleRemove(it.id)}
+                  dragHandlers={getItemProps(i)}
+                />
+              ))}
+              {checkedItems.map((it) => (
                 <Item
                   key={it.id}
                   item={it}

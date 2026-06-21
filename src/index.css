@@ -679,6 +679,23 @@ input {
   margin-top: 8px;
 }
 
+/* ---------- Drag & Drop ---------- */
+.item[data-draggable='true'] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.item--dragging {
+  opacity: 0.35;
+  background: var(--surface-2);
+}
+
+.item--drag-over {
+  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+}
+
 @keyframes fade {
   from {
     opacity: 0;
