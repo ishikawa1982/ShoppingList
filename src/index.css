@@ -688,12 +688,8 @@ input {
 }
 
 .item--dragging {
-  opacity: 0.35;
-  background: var(--surface-2);
-}
-
-.item--drag-over {
-  box-shadow: 0 0 0 2px var(--accent), var(--shadow);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  cursor: grabbing;
 }
 
 @keyframes fade {
