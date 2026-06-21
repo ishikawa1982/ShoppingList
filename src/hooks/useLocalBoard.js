@@ -30,6 +30,8 @@ export function useLocalBoard() {
       removeItem: (listId, itemId) =>
         setState((s) => store.removeItem(s, listId, itemId)),
       clearChecked: (listId) => setState((s) => store.clearChecked(s, listId)),
+      reorderItems: (listId, from, to) =>
+        setState((s) => store.reorderItems(s, listId, from, to)),
       // 共有を解除してクラウドの内容をローカルへ戻すときに使う
       replaceAll: (lists) => setState({ lists }),
     }),

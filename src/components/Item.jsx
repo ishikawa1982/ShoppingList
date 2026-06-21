@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
+export default function Item({ item, onToggle, onEdit, onRemove, showWho, dragHandlers }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(item.name)
   const [imgOpen, setImgOpen] = useState(false)
@@ -16,8 +16,14 @@ export default function Item({ item, onToggle, onEdit, onRemove, showWho }) {
     setEditing(false)
   }
 
+  const { onPointerDown, extraClass = '' } = dragHandlers || {}
+
   return (
-    <li className={'item' + (item.checked ? ' item--checked' : '')}>
+    <li
+      className={'item' + (item.checked ? ' item--checked' : '') + extraClass}
+      onPointerDown={onPointerDown}
+      data-draggable={dragHandlers ? 'true' : undefined}
+    >
       <button
         className={'item__check' + (item.checked ? ' item__check--on' : '')}
         onClick={onToggle}
