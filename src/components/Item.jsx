@@ -16,11 +16,12 @@ export default function Item({ item, onToggle, onEdit, onRemove, showWho, dragHa
     setEditing(false)
   }
 
-  const { onPointerDown, extraClass = '' } = dragHandlers || {}
+  const { onPointerDown, style, className: dragClass = '' } = dragHandlers || {}
 
   return (
     <li
-      className={'item' + (item.checked ? ' item--checked' : '') + extraClass}
+      className={'item' + (item.checked ? ' item--checked' : '') + dragClass}
+      style={style}
       onPointerDown={onPointerDown}
       data-draggable={dragHandlers ? 'true' : undefined}
     >

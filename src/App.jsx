@@ -113,6 +113,7 @@ export default function App() {
   const listRef = useRef(null)
   const { getItemProps } = useLongPressDrag(
     listRef,
+    uncheckedItems.length,
     (from, to) => board.reorderItems(activeList?.id, from, to),
   )
 
